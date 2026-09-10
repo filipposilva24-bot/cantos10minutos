@@ -37,16 +37,25 @@
         }
         .section-title { font-size: 1rem; color: var(--highlight); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Radar Cards com Palpite Inteligente */
+        /* Radar Cards com Análise Crítica */
         .radar-card {
             background-color: var(--bg-color); border: 1px solid var(--border); padding: 12px;
-            border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-            border-left: 4px solid var(--warning);
+            border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--warning);
         }
-        .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 3px; }
+        .radar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 2px; }
         .radar-info p { font-size: 0.78rem; color: #8b949e; }
-        .tip-badge { color: var(--warning); font-weight: bold; background: rgba(227, 179, 65, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 3px; }
-        .btn-radar { background-color: var(--primary); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
+        
+        .tip-badge { background: rgba(227, 179, 65, 0.15); color: var(--warning); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 6px; }
+        
+        .analysis-box {
+            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 8px; border-radius: 4px;
+            font-size: 0.78rem; color: #8b949e; margin-bottom: 10px; line-height: 1.3;
+        }
+        .analysis-box b { color: var(--text-color); }
+
+        .radar-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 8px; }
+        .btn-radar { background-color: var(--primary); color: #fff; padding: 6px 14px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
 
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b949e; }
@@ -89,7 +98,7 @@
 
     <header>
         <h1>🎯 Escanteios 0-10 Min Pro</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Motor Analítico Inteligente Ativo</p>
+        <p style="font-size: 0.8rem; color: #8b949e;">Auditoria Crítica e Estatística Avançada</p>
     </header>
 
     <div class="dashboard">
@@ -107,11 +116,11 @@
         </div>
     </div>
 
-    <!-- RADAR COM PALPITES INTELIGENTES -->
+    <!-- RADAR COM ANÁLISE CRÍTICA -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar com Palpites do Motor</h3>
+        <h3 class="section-title">📡 Radar com Análises Críticas</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando análises do dia...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando auditorias dos jogos...</p>
         </div>
     </div>
 
@@ -198,14 +207,14 @@
         let currentTicket = [];
         let allBets = [];
 
-        // OUVIR RADAR E EXIBIR PALPITES DO MOTOR
+        // OUVIR RADAR E EXIBIR ANÁLISE CRÍTICA
         const qRadar = query(radarCol, orderBy("probabilidade", "desc"));
         onSnapshot(qRadar, (snapshot) => {
             const list = document.getElementById('radar-list');
             list.innerHTML = '';
             
             if (snapshot.empty) {
-                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhuma análise gerada hoje.</p>';
+                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhuma auditoria gerada hoje.</p>';
                 return;
             }
 
@@ -214,15 +223,24 @@
                 let mercado = jogo.mercado_sugerido || "Total (>0-10)";
                 let linha = jogo.linha_sugerida || "Mais de 0.5";
                 let odd = jogo.odd_sugerida || 1.50;
+                let analise = jogo.analise_detalhada || "Análise tática em andamento.";
                 
                 list.innerHTML += `
                     <div class="radar-card">
-                        <div class="radar-info">
-                            <h4>${jogo.match} 🕒 ${jogo.horario || '--:--'}</h4>
-                            <p>Força: <span class="radar-prob">${jogo.probabilidade}%</span></p>
-                            <span class="tip-badge">💡 Palpite: ${mercado} - ${linha} (@${odd.toFixed(2)})</span>
+                        <div class="radar-top">
+                            <div class="radar-info">
+                                <h4>${jogo.match} 🕒 ${jogo.horario || '--:--'}</h4>
+                                <p>Índice de Confiança: <span class="radar-prob" style="color:var(--primary); font-weight:bold;">${jogo.probabilidade}%</span></p>
+                            </div>
                         </div>
-                        <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${mercado}', '${linha}', ${odd})">+ Bilhete</button>
+                        <div class="tip-badge">💡 Sugestão: ${mercado} - ${linha} (@${odd.toFixed(2)})</div>
+                        <div class="analysis-box">
+                            <b>Laudo Crítico:</b> ${analise}
+                        </div>
+                        <div class="radar-actions">
+                            <span style="font-size:0.75rem; color:#8b949e;">Estatística 0-10 Min Validada</span>
+                            <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${mercado}', '${linha}', ${odd})">+ Bilhete</button>
+                        </div>
                     </div>
                 `;
             });
@@ -337,7 +355,7 @@
                 `;
                 bet.matches.forEach((leg, index) => {
                     let legActions = leg.status === 'pending' 
-                        ? `<button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button> <button class="btn-r" onclick="window.updateLegStatus('${bet.id}', ${index}, 'red')">R</button>`
+                        ? `<button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button> <button class="btn-r" onclick="window.update_leg_status('${bet.id}', ${index}, 'red')">R</button>`
                         : (leg.status === 'green' ? `<span class="badge badge-green">GREEN</span>` : `<span class="badge badge-red">RED</span>`);
                     
                     let marketLabel = leg.market ? `${leg.market} - ${leg.line}` : "Total (>0-10)";
