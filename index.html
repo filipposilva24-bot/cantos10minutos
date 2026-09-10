@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Escanteios 0-10 Min</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+            --primary: #2ea043;
+            --danger: #da3633;
+            --border: #30363d;
+            --highlight: #58a6ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 600px; margin: auto; }
+
+        header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        header h1 { color: var(--highlight); font-size: 1.5rem; }
+
+        .dashboard {
+            display: flex; justify-content: space-between; background-color: var(--card-bg);
+            padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);
+        }
+        .stat-box { text-align: center; width: 33%; }
+        .stat-box span { display: block; font-size: 0.75rem; color: #8b949e; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-box strong { font-size: 1.1rem; color: #fff; }
+
+        .form-container, .ticket-container {
+            background-color: var(--card-bg); padding: 15px; border-radius: 8px;
+            margin-bottom: 20px; border: 1px solid var(--border);
+        }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b949e; }
+        .form-group input {
+            width: 100%; padding: 10px; background-color: var(--bg-color);
+            border: 1px solid var(--border); color: #fff; border-radius: 4px;
+        }
+
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+
+        button {
+            width: 100%; padding: 10px; border: none; border-radius: 4px;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-add { background-color: var(--border); color: #fff; margin-top: 5px; }
+        .btn-confirm { background-color: var(--primary); color: #fff; margin-top: 10px; font-size: 1.1rem; }
+        
+        /* Ticket Area */
+        .ticket-container { display: none; border-left: 4px solid var(--highlight); }
+        .ticket-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .ticket-list { list-style: none; margin-bottom: 15px; font-size: 0.9rem; }
+        .ticket-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+        .ticket-list li button { width: auto; padding: 2px 8px; background: var(--danger); color: white; font-size: 0.7rem; }
+
+        /* Bets List */
+        .bet-card {
+            background-color: var(--card-bg); padding: 15px; border-radius: 8px;
+            margin-bottom: 15px; border: 1px solid var(--border); border-left: 4px solid #8b949e;
+        }
+        .status-green { border-left-color: var(--primary); }
+        .status-red { border-left-color: var(--danger); }
+        .status-pending { border-left-color: var(--highlight); }
+
+        .bet-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .bet-type { font-size: 0.8rem; background: var(--bg-color); padding: 3px 8px; border-radius: 12px; color: var(--highlight); }
+        .bet-finances { font-size: 0.9rem; color: #fff; text-align: right; }
+
+        .leg-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
+        .leg-info { font-size: 0.9rem; }
+        .leg-actions button { width: auto; padding: 4px 8px; font-size: 0.8rem; margin-left: 5px; }
+        .btn-g { background-color: var(--primary); color: white; }
+        .btn-r { background-color: var(--danger); color: white; }
+        .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .badge-green { background: rgba(46, 160, 67, 0.2); color: var(--primary); }
+        .badge-red { background: rgba(218, 54, 51, 0.2); color: var(--danger); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎯 Escanteios 0-10 Min</h1>
+        <p style="font-size: 0.8rem; color: #8b949e;">Gestão de Múltiplas e Banco de Dados</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="stat-box">
+            <span>Investido</span>
+            <strong id="dash-invested">R$ 0.00</strong>
+        </div>
+        <div class="stat-box">
+            <span>Retorno</span>
+            <strong id="dash-return" style="color: var(--primary);">R$ 0.00</strong>
+        </div>
+        <div class="stat-box">
+            <span>Lucro (L/P)</span>
+            <strong id="dash-profit">R$ 0.00</strong>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-group">
+            <label>Jogo (Ex: Real Madrid x City)</label>
+            <input type="text" id="match-name" placeholder="Nome dos times">
+        </div>
+        <div class="form-group">
+            <label>Odd do Jogo</label>
+            <input type="number" id="match-odd" step="0.01" placeholder="1.50">
+        </div>
+        <button class="btn-add" onclick="window.addToTicket()">+ Adicionar ao Bilhete</button>
+    </div>
+
+    <!-- Carrinho / Bilhete -->
+    <div class="ticket-container" id="ticket-container">
+        <div class="ticket-header">
+            <strong>Seu Bilhete</strong>
+            <span style="color: var(--highlight);">Odd Total: <b id="ticket-total-odd">1.00</b></span>
+        </div>
+        <ul class="ticket-list" id="ticket-list"></ul>
+        
+        <div class="form-group">
+            <label>Valor da Aposta (Stake em R$)</label>
+            <input type="number" id="ticket-stake" step="1" placeholder="Ex: 10.00">
+        </div>
+        <button class="btn-confirm" onclick="window.confirmBet()">Confirmar Aposta</button>
+    </div>
+
+    <!-- Histórico de Apostas -->
+    <div id="bets-history">
+        <h3 style="margin-bottom: 10px; font-size: 1rem; color: var(--highlight);">Histórico de Entradas</h3>
+        <div id="bet-list"></div>
+    </div>
+
+    <!-- Módulo Firebase e Lógica Principal -->
+    <script type="module">
+        // 1. IMPORTAÇÕES DO FIREBASE (SDK v12.18.0)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        // ==========================================
+        // SUAS CREDENCIAIS DO FIREBASE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAq0f7x4S4AKJg_WajwxZu70RTIWyw1zTw",
+            authDomain: "cantos10minutos.firebaseapp.com",
+            projectId: "cantos10minutos",
+            storageBucket: "cantos10minutos.firebasestorage.app",
+            messagingSenderId: "613047782664",
+            appId: "1:613047782664:web:300f9144c72ba2dfa330bd",
+            measurementId: "G-LNW1ZTQQX9"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        const betsCol = collection(db, "escanteios_bets");
+
+        // Variáveis de Estado
+        let currentTicket = [];
+        let allBets = [];
+
+        // ==========================================
+        // LÓGICA DO BILHETE (FRONTEND)
+        // ==========================================
+        window.addToTicket = function() {
+            const name = document.getElementById('match-name').value;
+            const odd = parseFloat(document.getElementById('match-odd').value);
+
+            if (!name || isNaN(odd)) return alert("Preencha o jogo e a odd!");
+
+            currentTicket.push({ name, odd, status: 'pending' });
+            
+            document.getElementById('match-name').value = '';
+            document.getElementById('match-odd').value = '';
+            
+            renderTicket();
+        };
+
+        window.removeLeg = function(index) {
+            currentTicket.splice(index, 1);
+            renderTicket();
+        };
+
+        function renderTicket() {
+            const container = document.getElementById('ticket-container');
+            const list = document.getElementById('ticket-list');
+            const oddLabel = document.getElementById('ticket-total-odd');
+
+            if (currentTicket.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            let totalOdd = 1;
+            currentTicket.forEach((leg, index) => {
+                totalOdd *= leg.odd;
+                list.innerHTML += `<li><span>${leg.name} (@${leg.odd.toFixed(2)})</span> <button onclick="window.removeLeg(${index})">X</button></li>`;
+            });
+
+            oddLabel.innerText = totalOdd.toFixed(2);
+        }
+
+        // ==========================================
+        // SALVAR APOSTA (FIREBASE)
+        // ==========================================
+        window.confirmBet = async function() {
+            const stake = parseFloat(document.getElementById('ticket-stake').value);
+            if (isNaN(stake) || stake <= 0) return alert("Insira um valor válido de aposta.");
+            
+            let totalOdd = currentTicket.reduce((acc, leg) => acc * leg.odd, 1);
+            const type = currentTicket.length > 1 ? 'Múltipla' : 'Simples';
+
+            const newBet = {
+                type: type,
+                stake: stake,
+                totalOdd: totalOdd,
+                matches: currentTicket, // array com os jogos
+                status: 'pending', // pending, green, red
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                await addDoc(betsCol, newBet);
+                currentTicket = [];
+                document.getElementById('ticket-stake').value = '';
+                renderTicket();
+            } catch (error) {
+                console.error("Erro ao salvar aposta:", error);
+                alert("Erro ao salvar no banco de dados. Você já liberou as regras no Firestore Console?");
+            }
+        };
+
+        // ==========================================
+        // LER APOSTAS EM TEMPO REAL (FIREBASE)
+        // ==========================================
+        const q = query(betsCol, orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            allBets = [];
+            snapshot.forEach(doc => {
+                allBets.push({ id: doc.id, ...doc.data() });
+            });
+            renderHistory();
+            updateDashboard();
+        });
+
+        // ==========================================
+        // ATUALIZAR STATUS DE UM JOGO
+        // ==========================================
+        window.updateLegStatus = async function(betId, legIndex, newStatus) {
+            const bet = allBets.find(b => b.id === betId);
+            if (!bet) return;
+
+            // Atualiza o jogo específico
+            bet.matches[legIndex].status = newStatus;
+
+            // Verifica o status geral do bilhete
+            let hasRed = bet.matches.some(m => m.status === 'red');
+            let allGreen = bet.matches.every(m => m.status === 'green');
+
+            let finalStatus = 'pending';
+            if (hasRed) finalStatus = 'red';
+            else if (allGreen) finalStatus = 'green';
+
+            // Atualiza no Firebase
+            try {
+                await updateDoc(doc(db, "escanteios_bets", betId), {
+                    matches: bet.matches,
+                    status: finalStatus
+                });
+            } catch(e) {
+                console.error("Erro ao atualizar:", e);
+            }
+        };
+
+        // ==========================================
+        // RENDERIZAR HISTÓRICO E DASHBOARD
+        // ==========================================
+        function renderHistory() {
+            const list = document.getElementById('bet-list');
+            list.innerHTML = '';
+
+            allBets.forEach(bet => {
+                let cardClass = bet.status === 'green' ? 'status-green' : (bet.status === 'red' ? 'status-red' : 'status-pending');
+                let returnPot = (bet.stake * bet.totalOdd).toFixed(2);
+
+                let html = `
+                    <div class="bet-card ${cardClass}">
+                        <div class="bet-header">
+                            <span class="bet-type">${bet.type}</span>
+                            <div class="bet-finances">
+                                Stake: R$ ${bet.stake.toFixed(2)}<br>
+                                <span style="color:var(--highlight)">Retorno: R$ ${returnPot}</span>
+                            </div>
+                        </div>
+                        <div class="legs">
+                `;
+
+                bet.matches.forEach((leg, index) => {
+                    let legActions = '';
+                    if (leg.status === 'pending') {
+                        legActions = `
+                            <button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button>
+                            <button class="btn-r" onclick="window.updateLegStatus('${bet.id}', ${index}, 'red')">R</button>
+                        `;
+                    } else if (leg.status === 'green') {
+                        legActions = `<span class="badge badge-green">GREEN</span>`;
+                    } else {
+                        legActions = `<span class="badge badge-red">RED</span>`;
+                    }
+
+                    html += `
+                        <div class="leg-item">
+                            <div class="leg-info">
+                                <b>${leg.name}</b> (@${leg.odd.toFixed(2)})
+                            </div>
+                            <div class="leg-actions">
+                                ${legActions}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+                list.innerHTML += html;
+            });
+        }
+
+        function updateDashboard() {
+            let totalInvested = 0;
+            let totalReturn = 0;
+
+            allBets.forEach(bet => {
+                totalInvested += bet.stake;
+                if (bet.status === 'green') {
+                    totalReturn += (bet.stake * bet.totalOdd);
+                }
+            });
+
+            const profit = totalReturn - totalInvested;
+
+            document.getElementById('dash-invested').innerText = `R$ ${totalInvested.toFixed(2)}`;
+            document.getElementById('dash-return').innerText = `R$ ${totalReturn.toFixed(2)}`;
+            
+            const profitEl = document.getElementById('dash-profit');
+            profitEl.innerText = `R$ ${profit.toFixed(2)}`;
+            profitEl.style.color = profit >= 0 ? 'var(--primary)' : 'var(--danger)';
+        }
+    </script>
+</body>
+</html>
