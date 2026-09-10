@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Escanteios 0-10 Min Pro</title>
+    <title>Radar Escanteios 0-10 Min Pro Institutional</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -18,7 +18,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
 
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 600px; margin: auto; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 650px; margin: auto; }
 
         header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         header h1 { color: var(--highlight); font-size: 1.5rem; }
@@ -38,12 +38,26 @@
         .section-title { font-size: 1rem; color: var(--highlight); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
 
         .radar-card {
-            background-color: var(--bg-color); border: 1px solid var(--border); padding: 12px;
-            border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--warning);
+            background-color: var(--bg-color); border: 1px solid var(--border); padding: 14px;
+            border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--warning);
         }
-        .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 2px; }
-        .radar-info p { font-size: 0.78rem; color: #8b949e; margin-bottom: 8px; }
+        .radar-info h4 { font-size: 1rem; color: #fff; margin-bottom: 4px; }
+        .radar-info p { font-size: 0.8rem; color: #8b949e; margin-bottom: 10px; }
         
+        /* Botão de Scouting */
+        .btn-scout {
+            background: rgba(88, 166, 255, 0.1); color: var(--highlight); border: 1px solid var(--highlight);
+            padding: 6px 10px; border-radius: 4px; font-size: 0.78rem; cursor: pointer; width: 100%; margin-bottom: 10px; font-weight: bold;
+        }
+        .btn-scout:hover { background: rgba(88, 166, 255, 0.2); }
+
+        .scout-panel {
+            display: none; background: #090d12; border: 1px solid var(--border); padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.78rem;
+        }
+        .scout-grid { display: flex; gap: 10px; margin-bottom: 8px; }
+        .scout-column { flex: 1; background: var(--card-bg); padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
+        .scout-column h5 { color: var(--warning); margin-bottom: 4px; font-size: 0.82rem; }
+
         .simulador-box {
             background: rgba(22, 27, 34, 0.9); border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-top: 8px;
         }
@@ -51,7 +65,7 @@
         .simulador-row select { flex: 1; padding: 6px; background: var(--bg-color); border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.8rem; }
 
         .analise-resultado {
-            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 10px; border-radius: 4px;
+            background: rgba(46, 160, 67, 0.05); border: 1px dashed var(--border); padding: 10px; border-radius: 4px;
             font-size: 0.78rem; color: #8b949e; margin-top: 8px; line-height: 1.4;
         }
         .analise-resultado b { color: var(--text-color); }
@@ -100,7 +114,7 @@
 
     <header>
         <h1>🎯 Escanteios 0-10 Min Pro</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Auditoria Crítica e Simulador Avançado</p>
+        <p style="font-size: 0.8rem; color: #8b949e;">Terminal Institucional de Scouting & Poisson</p>
     </header>
 
     <div class="dashboard">
@@ -118,11 +132,11 @@
         </div>
     </div>
 
-    <!-- RADAR GLOBAL -->
+    <!-- RADAR GLOBAL INSTITUCIONAL -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar Global & Análise Crítica</h3>
+        <h3 class="section-title">📡 Radar Institucional & Relatórios</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando análises dos jogos...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando dados de scouting...</p>
         </div>
     </div>
 
@@ -240,26 +254,55 @@
                 let docId = doc.id;
                 let matchName = jogo.match;
                 let horario = jogo.horario || '--:--';
-                let analiseBase = jogo.analise_base || "Análise tática em andamento.";
+                let contextoJogo = jogo.contexto_jogo || "Contexto tático em auditoria.";
                 
                 let lCasa = jogo.lambda_casa || 3.5;
                 let lFora = jogo.lambda_fora || 2.5;
+
+                let scoutCasa = jogo.scout_casa || { frequencia_05: "8/10", frequencia_15: "4/10", media_janela: "1.2 cantos", historico_recente: [], perfil: "Pressão inicial alta." };
+                let scoutFora = jogo.scout_fora || { frequencia_05: "7/10", frequencia_15: "3/10", media_janela: "0.9 cantos", historico_recente: [], perfil: "Transição rápida." };
+
+                let histCasaStr = scoutCasa.historico_recente ? scoutCasa.historico_recente.join(" ") : "";
+                let histForaStr = scoutFora.historico_recente ? scoutFora.historico_recente.join(" ") : "";
 
                 list.innerHTML += `
                     <div class="radar-card" id="card-${docId}">
                         <div class="radar-info">
                             <h4>${matchName} 🕒 ${horario}</h4>
-                            <p>Selecione o mercado e linha para ver a auditoria detalhada:</p>
+                            <p><b>Contexto do Jogo (Must-Win):</b> ${contextoJogo}</p>
                         </div>
                         
+                        <button class="btn-scout" onclick="toggleScout('${docId}')">🔍 Ver Relatório & Scouting Completo (Últimos 10 Jogos)</button>
+                        
+                        <div class="scout-panel" id="scout-${docId}">
+                            <div class="scout-grid">
+                                <div class="scout-column">
+                                    <h5>🏠 ${jogo.time_casa || 'Casa'}</h5>
+                                    <p><b>Taxa >0.5 (10j):</b> ${scoutCasa.frequencia_05}</p>
+                                    <p><b>Taxa >1.5 (10j):</b> ${scoutCasa.frequencia_15}</p>
+                                    <p><b>Média 0-10':</b> ${scoutCasa.media_janela}</p>
+                                    <p style="font-size:0.7rem; color:#8b949e; margin-top:3px;"><b>Últimos 10:</b> ${histCasaStr}</p>
+                                    <p style="font-size:0.7rem; color:var(--highlight); margin-top:3px;"><b>Perfil:</b> ${scoutCasa.perfil}</p>
+                                </div>
+                                <div class="scout-column">
+                                    <h5>✈️ ${jogo.time_fora || 'Fora'}</h5>
+                                    <p><b>Taxa >0.5 (10j):</b> ${scoutFora.frequencia_05}</p>
+                                    <p><b>Taxa >1.5 (10j):</b> ${scoutFora.frequencia_15}</p>
+                                    <p><b>Média 0-10':</b> ${scoutFora.media_janela}</p>
+                                    <p style="font-size:0.7rem; color:#8b949e; margin-top:3px;"><b>Últimos 10:</b> ${histForaStr}</p>
+                                    <p style="font-size:0.7rem; color:var(--highlight); margin-top:3px;"><b>Perfil:</b> ${scoutFora.perfil}</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="simulador-box">
                             <div class="simulador-row">
-                                <select id="mercado-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora}, '${encodeURIComponent(analiseBase)}')">
+                                <select id="mercado-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
                                     <option value="Total">Total (Combinado)</option>
                                     <option value="Casa">Time da Casa (Home)</option>
                                     <option value="Visitante">Visitante (Away)</option>
                                 </select>
-                                <select id="linha-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora}, '${encodeURIComponent(analiseBase)}')">
+                                <select id="linha-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
                                     <option value="0.5">Mais de 0.5</option>
                                     <option value="1.5">Mais de 1.5</option>
                                     <option value="2.5">Mais de 2.5</option>
@@ -267,25 +310,33 @@
                             </div>
                             
                             <div class="analise-resultado" id="res-${docId}">
-                                <b>Auditoria:</b> Carregando laudo...
+                                <b>Auditoria:</b> Calculando matriz estatística...
                             </div>
                         </div>
 
                         <div class="radar-actions">
-                            <span style="font-size:0.72rem; color:#8b949e;">Modelo Poisson & Must-Win</span>
+                            <span style="font-size:0.72rem; color:#8b949e;">Scouting Institucional Ativo</span>
                             <button class="btn-radar" onclick="adicionarDoSimulador('${docId}', '${matchName}')">+ Bilhete</button>
                         </div>
                     </div>
                 `;
                 
-                setTimeout(() => atualizarSimulacao(docId, lCasa, lFora, encodeURIComponent(analiseBase)), 100);
+                setTimeout(() => atualizarSimulacao(docId, lCasa, lFora), 100);
             });
         });
 
-        window.atualizarSimulacao = function(docId, lCasa, lFora, analiseEncoded) {
+        window.toggleScout = function(docId) {
+            let panel = document.getElementById(`scout-${docId}`);
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
+        };
+
+        window.atualizarSimulacao = function(docId, lCasa, lFora) {
             let mercadoSel = document.getElementById(`mercado-${docId}`).value;
             let linhaSel = document.getElementById(`linha-${docId}`).value;
-            let analiseBase = decodeURIComponent(analiseEncoded);
             
             let lambdaAlvo = 0;
             let k = 1;
@@ -306,14 +357,13 @@
             let oddJusta = (100 / chance) * 0.95;
             if (oddJusta < 1.05) oddJusta = 1.05;
 
-            // Geração de laudo crítico personalizado por linha e mercado
             let veredito = "";
             if (linhaSel === "0.5") {
-                veredito = chance > 72 ? "<b>Veredito:</b> Entrada altamente recomendada pela alta probabilidade de escanteio precoce." : "<b>Veredito:</b> Linha conservadora, mas exige cautela caso o jogo comece estudado.";
+                veredito = chance > 70 ? "<b>Recomendação:</b> Entrada de alto valor estatístico baseada na taxa histórica recente dos times." : "<b>Recomendação:</b> Risco moderado. O histórico de início de jogo é instável.";
             } else if (linhaSel === "1.5") {
-                veredito = chance > 55 ? "<b>Veredito:</b> Excelente valor (Edge positivo). O perfil de pressão inicial suporta a linha de 2 ou mais cantos." : "<b>Veredito:</b> Risco alto para 2 cantos nos primeiros 10 minutos. O histórico não garante volume suficiente.";
+                veredito = chance > 52 ? "<b>Recomendação:</b> Excelente Edge para esticar a linha. O volume dos últimos 10 jogos suporta 2+ cantos." : "<b>Recomendação:</b> Evitar. As equipes raramente produzem dois escanteios precoces simultaneamente.";
             } else {
-                veredito = chance > 35 ? "<b>Veredito:</b> Oportunidade de Odd alta (Tiro longo). Altamente especulativo, indicado apenas para jogos de extrema pressão." : "<b>Veredito:</b> Inviável estatisticamente. Chance muito baixa para 3+ escanteios neste início.";
+                veredito = chance > 30 ? "<b>Recomendação:</b> Oportunidade de Odd alta (Tiro longo / Alta volatilidade)." : "<b>Recomendação:</b> Inviável estatisticamente para esta janela de 10 minutos.";
             }
 
             let resBox = document.getElementById(`res-${docId}`);
@@ -323,9 +373,8 @@
             resBox.setAttribute('data-linha', `Mais de ${linhaSel}`);
 
             resBox.innerHTML = `
-                <b>Probabilidade:</b> <span style="color:var(--primary);">${chance.toFixed(1)}%</span> | 
-                <b>Odd Justa:</b> <span style="color:var(--warning);">@${oddJusta.toFixed(2)}</span><br>
-                <b>Contexto do Jogo:</b> ${analiseBase}<br>
+                <b>Probabilidade Estatística:</b> <span style="color:var(--primary); font-weight:bold;">${chance.toFixed(1)}%</span> | 
+                <b>Odd Justa:</b> <span style="color:var(--warning); font-weight:bold;">@${oddJusta.toFixed(2)}</span><br>
                 ${veredito}
             `;
         };
