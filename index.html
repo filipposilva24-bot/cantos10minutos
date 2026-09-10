@@ -37,24 +37,27 @@
         }
         .section-title { font-size: 1rem; color: var(--highlight); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Radar Cards com Análise Crítica */
+        /* Radar Cards Multi-Linhas */
         .radar-card {
             background-color: var(--bg-color); border: 1px solid var(--border); padding: 12px;
             border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--warning);
         }
-        .radar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 2px; }
-        .radar-info p { font-size: 0.78rem; color: #8b949e; }
+        .radar-info p { font-size: 0.78rem; color: #8b949e; margin-bottom: 8px; }
         
-        .tip-badge { background: rgba(227, 179, 65, 0.15); color: var(--warning); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 6px; }
-        
-        .analysis-box {
-            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 8px; border-radius: 4px;
-            font-size: 0.78rem; color: #8b949e; margin-bottom: 10px; line-height: 1.3;
+        .simulador-box {
+            background: rgba(22, 27, 34, 0.9); border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-top: 8px;
         }
-        .analysis-box b { color: var(--text-color); }
+        .simulador-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .simulador-row select { flex: 1; padding: 6px; background: var(--bg-color); border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.8rem; }
 
-        .radar-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 8px; }
+        .analise-resultado {
+            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 8px; border-radius: 4px;
+            font-size: 0.78rem; color: #8b949e; margin-top: 8px; line-height: 1.3;
+        }
+        .analise-resultado b { color: var(--text-color); }
+
+        .radar-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
         .btn-radar { background-color: var(--primary); color: #fff; padding: 6px 14px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
 
         .form-group { margin-bottom: 10px; }
@@ -98,7 +101,7 @@
 
     <header>
         <h1>🎯 Escanteios 0-10 Min Pro</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Auditoria Crítica e Estatística Avançada</p>
+        <p style="font-size: 0.8rem; color: #8b949e;">Simulador Multi-Linhas e Análise por Poisson</p>
     </header>
 
     <div class="dashboard">
@@ -116,11 +119,11 @@
         </div>
     </div>
 
-    <!-- RADAR COM ANÁLISE CRÍTICA -->
+    <!-- RADAR GLOBAL -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar com Análises Críticas</h3>
+        <h3 class="section-title">📡 Radar Global & Simulador de Linhas</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando auditorias dos jogos...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando jogos do dia...</p>
         </div>
     </div>
 
@@ -207,44 +210,129 @@
         let currentTicket = [];
         let allBets = [];
 
-        // OUVIR RADAR E EXIBIR ANÁLISE CRÍTICA
-        const qRadar = query(radarCol, orderBy("probabilidade", "desc"));
+        // FÓRMULA DE POISSON NO FRONTEND PARA CADA LINHA
+        function calcularPoisson(lambda, k) {
+            let pMenosQueK = 0;
+            for (let i = 0; i < k; i++) {
+                pMenosQueK += (Math.exp(-lambda) * Math.pow(lambda, i)) / Fatorial(i);
+            }
+            let chance = (1 - pMenosQueK) * 100;
+            return Math.max(5, Math.min(98, chance));
+        }
+
+        function Fatorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let acumulado = 1;
+            for (let i = 2; i <= n; i++) acumulado *= i;
+            return acumulado;
+        }
+
+        // RENDERIZAR O RADAR COM O SIMULADOR INTERATIVO
+        const qRadar = query(radarCol, orderBy("match", "asc"));
         onSnapshot(qRadar, (snapshot) => {
             const list = document.getElementById('radar-list');
             list.innerHTML = '';
             
             if (snapshot.empty) {
-                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhuma auditoria gerada hoje.</p>';
+                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhum jogo no radar.</p>';
                 return;
             }
 
             snapshot.forEach(doc => {
                 let jogo = doc.data();
-                let mercado = jogo.mercado_sugerido || "Total (>0-10)";
-                let linha = jogo.linha_sugerida || "Mais de 0.5";
-                let odd = jogo.odd_sugerida || 1.50;
-                let analise = jogo.analise_detalhada || "Análise tática em andamento.";
+                let docId = doc.id;
+                let matchName = jogo.match;
+                let horario = jogo.horario || '--:--';
+                let analise = jogo.analise_detalhada || "Análise tática indisponível.";
                 
+                // Lambdas salvos pelo Python
+                let lCasa = jogo.lambda_casa || 3.5;
+                let lFora = jogo.lambda_fora || 2.5;
+
                 list.innerHTML += `
-                    <div class="radar-card">
-                        <div class="radar-top">
-                            <div class="radar-info">
-                                <h4>${jogo.match} 🕒 ${jogo.horario || '--:--'}</h4>
-                                <p>Índice de Confiança: <span class="radar-prob" style="color:var(--primary); font-weight:bold;">${jogo.probabilidade}%</span></p>
+                    <div class="radar-card" id="card-${docId}">
+                        <div class="radar-info">
+                            <h4>${matchName} 🕒 ${horario}</h4>
+                            <p>Toque abaixo para simular qualquer mercado e linha:</p>
+                        </div>
+                        
+                        <div class="simulador-box">
+                            <div class="simulador-row">
+                                <select id="mercado-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
+                                    <option value="Total">Total (Combinado)</option>
+                                    <option value="Casa">Time da Casa (Home)</option>
+                                    <option value="Visitante">Visitante (Away)</option>
+                                </select>
+                                <select id="linha-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
+                                    <option value="0.5">Mais de 0.5</option>
+                                    <option value="1.5">Mais de 1.5</option>
+                                    <option value="2.5">Mais de 2.5</option>
+                                </select>
+                            </div>
+                            
+                            <div class="analise-resultado" id="res-${docId}">
+                                <b>Chance:</b> Calculando... | <b>Odd Justa:</b> -- | <b>Laudo:</b> Carregando...
                             </div>
                         </div>
-                        <div class="tip-badge">💡 Sugestão: ${mercado} - ${linha} (@${odd.toFixed(2)})</div>
-                        <div class="analysis-box">
-                            <b>Laudo Crítico:</b> ${analise}
-                        </div>
+
                         <div class="radar-actions">
-                            <span style="font-size:0.75rem; color:#8b949e;">Estatística 0-10 Min Validada</span>
-                            <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${mercado}', '${linha}', ${odd})">+ Bilhete</button>
+                            <span style="font-size:0.72rem; color:#8b949e;">Modelo Estatístico Ativo</span>
+                            <button class="btn-radar" onclick="adicionarDoSimulador('${docId}', '${matchName}')">+ Bilhete</button>
                         </div>
                     </div>
                 `;
+                
+                // Executa a simulação padrão ao carregar
+                setTimeout(() => atualizarSimulacao(docId, lCasa, lFora), 100);
             });
         });
+
+        // FUNÇÃO GLOBAL DE SIMULAÇÃO INSTANTÂNEA
+        window.atualizarSimulacao = function(docId, lCasa, lFora) {
+            let mercadoSel = document.getElementById(`mercado-${docId}`).value;
+            let linhaSel = document.getElementById(`linha-${docId}`).value;
+            
+            let lambdaAlvo = 0;
+            let k = 1;
+            
+            if (mercadoSel === "Total") {
+                lambdaAlvo = ((lCasa + lFora) / 90) * 10 * 1.15;
+            } else if (mercadoSel === "Casa") {
+                lambdaAlvo = (lCasa / 90) * 10 * 1.20;
+            } else {
+                lambdaAlvo = (lFora / 90) * 10 * 1.10;
+            }
+
+            if (linhaSel === "0.5") k = 1;
+            if (linhaSel === "1.5") k = 2;
+            if (linhaSel === "2.5") k = 3;
+
+            let chance = calcularPoisson(lambdaAlvo, k);
+            let oddJusta = (100 / chance) * 0.95; // Margem justa
+            if (oddJusta < 1.05) oddJusta = 1.05;
+
+            // Salva os dados temporários no elemento para resgate ao adicionar
+            let resBox = document.getElementById(`res-${docId}`);
+            resBox.setAttribute('data-chance', chance.toFixed(1));
+            resBox.setAttribute('data-odd', oddJusta.toFixed(2));
+            resBox.setAttribute('data-mercado', mercadoSel === "Total" ? "Total (>0-10)" : (mercadoSel === "Casa" ? "Casa (>0-10)" : "Visitante (>0-10)"));
+            resBox.setAttribute('data-linha', `Mais de ${linhaSel}`);
+
+            resBox.innerHTML = `
+                <b>Chance:</b> <span style="color:var(--primary);">${chance.toFixed(1)}%</span> | 
+                <b>Odd Sugerida:</b> <span style="color:var(--warning);">@${oddJusta.toFixed(2)}</span><br>
+                <b>Análise:</b> Volume esperado para ${mercadoSel} na linha de ${linhaSel} com base na pressão inicial e histórico da liga.
+            `;
+        };
+
+        window.adicionarDoSimulador = function(docId, matchName) {
+            let resBox = document.getElementById(`res-${docId}`);
+            let market = resBox.getAttribute('data-mercado') || "Total (>0-10)";
+            let line = resBox.getAttribute('data-linha') || "Mais de 0.5";
+            let odd = parseFloat(resBox.getAttribute('data-odd')) || 1.50;
+
+            addLeg(matchName, market, line, odd);
+        };
 
         window.addToTicket = function() {
             const name = document.getElementById('match-name').value;
@@ -257,10 +345,6 @@
             addLeg(name, market, line, odd);
             document.getElementById('match-name').value = '';
             document.getElementById('match-odd').value = '';
-        };
-
-        window.addFromRadar = function(name, market, line, odd) {
-            addLeg(name, market, line, odd);
         };
 
         function addLeg(name, market, line, odd) {
@@ -355,7 +439,7 @@
                 `;
                 bet.matches.forEach((leg, index) => {
                     let legActions = leg.status === 'pending' 
-                        ? `<button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button> <button class="btn-r" onclick="window.update_leg_status('${bet.id}', ${index}, 'red')">R</button>`
+                        ? `<button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button> <button class="btn-r" onclick="window.updateLegStatus('${bet.id}', ${index}, 'red')">R</button>`
                         : (leg.status === 'green' ? `<span class="badge badge-green">GREEN</span>` : `<span class="badge badge-red">RED</span>`);
                     
                     let marketLabel = leg.market ? `${leg.market} - ${leg.line}` : "Total (>0-10)";
