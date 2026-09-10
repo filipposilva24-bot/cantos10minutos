@@ -23,7 +23,6 @@
         header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         header h1 { color: var(--highlight); font-size: 1.5rem; }
 
-        /* Dashboard */
         .dashboard {
             display: flex; justify-content: space-between; background-color: var(--card-bg);
             padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);
@@ -32,25 +31,23 @@
         .stat-box span { display: block; font-size: 0.75rem; color: #8b949e; text-transform: uppercase; margin-bottom: 5px; }
         .stat-box strong { font-size: 1.1rem; color: #fff; }
 
-        /* Containers Padrão */
         .section-container {
             background-color: var(--card-bg); padding: 15px; border-radius: 8px;
             margin-bottom: 20px; border: 1px solid var(--border);
         }
         .section-title { font-size: 1rem; color: var(--highlight); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Radar Cards */
+        /* Radar Cards com Palpite Inteligente */
         .radar-card {
             background-color: var(--bg-color); border: 1px solid var(--border); padding: 12px;
             border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
             border-left: 4px solid var(--warning);
         }
-        .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 4px; }
-        .radar-info p { font-size: 0.8rem; color: #8b949e; }
-        .radar-prob { color: var(--warning); font-weight: bold; }
-        .btn-radar { background-color: var(--border); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .radar-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 3px; }
+        .radar-info p { font-size: 0.78rem; color: #8b949e; }
+        .tip-badge { color: var(--warning); font-weight: bold; background: rgba(227, 179, 65, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 3px; }
+        .btn-radar { background-color: var(--primary); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
 
-        /* Formulários */
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b949e; }
         .form-group input, .form-group select { 
@@ -63,14 +60,12 @@
         .btn-add { background-color: var(--border); color: #fff; margin-top: 5px; }
         .btn-confirm { background-color: var(--primary); color: #fff; margin-top: 10px; font-size: 1.1rem; }
         
-        /* Ticket Area */
         .ticket-container { display: none; border-left: 4px solid var(--highlight); }
         .ticket-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .ticket-list { list-style: none; margin-bottom: 15px; font-size: 0.9rem; }
         .ticket-list li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
         .ticket-list li button { width: auto; padding: 2px 8px; background: var(--danger); color: white; font-size: 0.7rem; }
 
-        /* Bets List */
         .bet-card { background-color: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); border-left: 4px solid #8b949e; }
         .status-green { border-left-color: var(--primary); }
         .status-red { border-left-color: var(--danger); }
@@ -88,14 +83,13 @@
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
         .badge-green { background: rgba(46, 160, 67, 0.2); color: var(--primary); }
         .badge-red { background: rgba(218, 54, 51, 0.2); color: var(--danger); }
-
     </style>
 </head>
 <body>
 
     <header>
         <h1>🎯 Escanteios 0-10 Min Pro</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Gestão Avançada por Submercados</p>
+        <p style="font-size: 0.8rem; color: #8b949e;">Motor Analítico Inteligente Ativo</p>
     </header>
 
     <div class="dashboard">
@@ -113,17 +107,17 @@
         </div>
     </div>
 
-    <!-- RADAR DO DIA -->
+    <!-- RADAR COM PALPITES INTELIGENTES -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar de Oportunidades</h3>
+        <h3 class="section-title">📡 Radar com Palpites do Motor</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando jogos do dia...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando análises do dia...</p>
         </div>
     </div>
 
-    <!-- ADICIONAR MANUALMENTE -->
+    <!-- ENTRADA MANUAL -->
     <div class="section-container">
-        <h3 class="section-title" style="color: #fff;">+ Nova Entrada</h3>
+        <h3 class="section-title" style="color: #fff;">+ Nova Entrada Manual</h3>
         <div class="form-group">
             <label>Jogo (Ex: Real Madrid x City)</label>
             <input type="text" id="match-name" placeholder="Nome dos times">
@@ -158,7 +152,7 @@
         <button class="btn-add" onclick="window.addToTicket()">Adicionar ao Bilhete</button>
     </div>
 
-    <!-- CARRINHO / BILHETE -->
+    <!-- BILHETE -->
     <div class="section-container ticket-container" id="ticket-container">
         <div class="ticket-header">
             <strong>Seu Bilhete</strong>
@@ -179,7 +173,6 @@
         <div id="bet-list"></div>
     </div>
 
-    <!-- SCRIPT FIREBASE E LÓGICA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
@@ -205,28 +198,31 @@
         let currentTicket = [];
         let allBets = [];
 
-        // OUVIR RADAR
+        // OUVIR RADAR E EXIBIR PALPITES DO MOTOR
         const qRadar = query(radarCol, orderBy("probabilidade", "desc"));
         onSnapshot(qRadar, (snapshot) => {
             const list = document.getElementById('radar-list');
             list.innerHTML = '';
             
             if (snapshot.empty) {
-                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhum jogo no radar hoje.</p>';
+                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhuma análise gerada hoje.</p>';
                 return;
             }
 
             snapshot.forEach(doc => {
                 let jogo = doc.data();
-                let oddPadrao = "1.55";
+                let mercado = jogo.mercado_sugerido || "Total (>0-10)";
+                let linha = jogo.linha_sugerida || "Mais de 0.5";
+                let odd = jogo.odd_sugerida || 1.50;
                 
                 list.innerHTML += `
                     <div class="radar-card">
                         <div class="radar-info">
                             <h4>${jogo.match} 🕒 ${jogo.horario || '--:--'}</h4>
-                            <p>Chance: <span class="radar-prob">${jogo.probabilidade}%</span> | Est.: Total >0.5 (@${oddPadrao})</p>
+                            <p>Força: <span class="radar-prob">${jogo.probabilidade}%</span></p>
+                            <span class="tip-badge">💡 Palpite: ${mercado} - ${linha} (@${odd.toFixed(2)})</span>
                         </div>
-                        <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${oddPadrao}')">+ Bilhete</button>
+                        <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${mercado}', '${linha}', ${odd})">+ Bilhete</button>
                     </div>
                 `;
             });
@@ -245,8 +241,8 @@
             document.getElementById('match-odd').value = '';
         };
 
-        window.addFromRadar = function(name, oddStr) {
-            addLeg(name, "Total (>0-10)", "Mais de 0.5", parseFloat(oddStr));
+        window.addFromRadar = function(name, market, line, odd) {
+            addLeg(name, market, line, odd);
         };
 
         function addLeg(name, market, line, odd) {
@@ -328,7 +324,6 @@
         function renderHistory() {
             const list = document.getElementById('bet-list');
             list.innerHTML = '';
-            allBets.spec = true;
             allBets.forEach(bet => {
                 let cardClass = bet.status === 'green' ? 'status-green' : (bet.status === 'red' ? 'status-red' : 'status-pending');
                 let returnPot = (bet.stake * bet.totalOdd).toFixed(2);
