@@ -37,7 +37,6 @@
         }
         .section-title { font-size: 1rem; color: var(--highlight); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Radar Cards Multi-Linhas */
         .radar-card {
             background-color: var(--bg-color); border: 1px solid var(--border); padding: 12px;
             border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--warning);
@@ -52,8 +51,8 @@
         .simulador-row select { flex: 1; padding: 6px; background: var(--bg-color); border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.8rem; }
 
         .analise-resultado {
-            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 8px; border-radius: 4px;
-            font-size: 0.78rem; color: #8b949e; margin-top: 8px; line-height: 1.3;
+            background: rgba(88, 166, 255, 0.05); border: 1px dashed var(--border); padding: 10px; border-radius: 4px;
+            font-size: 0.78rem; color: #8b949e; margin-top: 8px; line-height: 1.4;
         }
         .analise-resultado b { color: var(--text-color); }
 
@@ -101,7 +100,7 @@
 
     <header>
         <h1>🎯 Escanteios 0-10 Min Pro</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Simulador Multi-Linhas e Análise por Poisson</p>
+        <p style="font-size: 0.8rem; color: #8b949e;">Auditoria Crítica e Simulador Avançado</p>
     </header>
 
     <div class="dashboard">
@@ -121,9 +120,9 @@
 
     <!-- RADAR GLOBAL -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar Global & Simulador de Linhas</h3>
+        <h3 class="section-title">📡 Radar Global & Análise Crítica</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando jogos do dia...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando análises dos jogos...</p>
         </div>
     </div>
 
@@ -210,7 +209,6 @@
         let currentTicket = [];
         let allBets = [];
 
-        // FÓRMULA DE POISSON NO FRONTEND PARA CADA LINHA
         function calcularPoisson(lambda, k) {
             let pMenosQueK = 0;
             for (let i = 0; i < k; i++) {
@@ -227,7 +225,6 @@
             return acumulado;
         }
 
-        // RENDERIZAR O RADAR COM O SIMULADOR INTERATIVO
         const qRadar = query(radarCol, orderBy("match", "asc"));
         onSnapshot(qRadar, (snapshot) => {
             const list = document.getElementById('radar-list');
@@ -243,9 +240,8 @@
                 let docId = doc.id;
                 let matchName = jogo.match;
                 let horario = jogo.horario || '--:--';
-                let analise = jogo.analise_detalhada || "Análise tática indisponível.";
+                let analiseBase = jogo.analise_base || "Análise tática em andamento.";
                 
-                // Lambdas salvos pelo Python
                 let lCasa = jogo.lambda_casa || 3.5;
                 let lFora = jogo.lambda_fora || 2.5;
 
@@ -253,17 +249,17 @@
                     <div class="radar-card" id="card-${docId}">
                         <div class="radar-info">
                             <h4>${matchName} 🕒 ${horario}</h4>
-                            <p>Toque abaixo para simular qualquer mercado e linha:</p>
+                            <p>Selecione o mercado e linha para ver a auditoria detalhada:</p>
                         </div>
                         
                         <div class="simulador-box">
                             <div class="simulador-row">
-                                <select id="mercado-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
+                                <select id="mercado-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora}, '${encodeURIComponent(analiseBase)}')">
                                     <option value="Total">Total (Combinado)</option>
                                     <option value="Casa">Time da Casa (Home)</option>
                                     <option value="Visitante">Visitante (Away)</option>
                                 </select>
-                                <select id="linha-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora})">
+                                <select id="linha-${docId}" onchange="atualizarSimulacao('${docId}', ${lCasa}, ${lFora}, '${encodeURIComponent(analiseBase)}')">
                                     <option value="0.5">Mais de 0.5</option>
                                     <option value="1.5">Mais de 1.5</option>
                                     <option value="2.5">Mais de 2.5</option>
@@ -271,26 +267,25 @@
                             </div>
                             
                             <div class="analise-resultado" id="res-${docId}">
-                                <b>Chance:</b> Calculando... | <b>Odd Justa:</b> -- | <b>Laudo:</b> Carregando...
+                                <b>Auditoria:</b> Carregando laudo...
                             </div>
                         </div>
 
                         <div class="radar-actions">
-                            <span style="font-size:0.72rem; color:#8b949e;">Modelo Estatístico Ativo</span>
+                            <span style="font-size:0.72rem; color:#8b949e;">Modelo Poisson & Must-Win</span>
                             <button class="btn-radar" onclick="adicionarDoSimulador('${docId}', '${matchName}')">+ Bilhete</button>
                         </div>
                     </div>
                 `;
                 
-                // Executa a simulação padrão ao carregar
-                setTimeout(() => atualizarSimulacao(docId, lCasa, lFora), 100);
+                setTimeout(() => atualizarSimulacao(docId, lCasa, lFora, encodeURIComponent(analiseBase)), 100);
             });
         });
 
-        // FUNÇÃO GLOBAL DE SIMULAÇÃO INSTANTÂNEA
-        window.atualizarSimulacao = function(docId, lCasa, lFora) {
+        window.atualizarSimulacao = function(docId, lCasa, lFora, analiseEncoded) {
             let mercadoSel = document.getElementById(`mercado-${docId}`).value;
             let linhaSel = document.getElementById(`linha-${docId}`).value;
+            let analiseBase = decodeURIComponent(analiseEncoded);
             
             let lambdaAlvo = 0;
             let k = 1;
@@ -298,7 +293,7 @@
             if (mercadoSel === "Total") {
                 lambdaAlvo = ((lCasa + lFora) / 90) * 10 * 1.15;
             } else if (mercadoSel === "Casa") {
-                lambdaAlvo = (lCasa / 90) * 10 * 1.20;
+                lambdaAlvo = (lCasa / 90) * 10 * 1.25;
             } else {
                 lambdaAlvo = (lFora / 90) * 10 * 1.10;
             }
@@ -308,10 +303,19 @@
             if (linhaSel === "2.5") k = 3;
 
             let chance = calcularPoisson(lambdaAlvo, k);
-            let oddJusta = (100 / chance) * 0.95; // Margem justa
+            let oddJusta = (100 / chance) * 0.95;
             if (oddJusta < 1.05) oddJusta = 1.05;
 
-            // Salva os dados temporários no elemento para resgate ao adicionar
+            // Geração de laudo crítico personalizado por linha e mercado
+            let veredito = "";
+            if (linhaSel === "0.5") {
+                veredito = chance > 72 ? "<b>Veredito:</b> Entrada altamente recomendada pela alta probabilidade de escanteio precoce." : "<b>Veredito:</b> Linha conservadora, mas exige cautela caso o jogo comece estudado.";
+            } else if (linhaSel === "1.5") {
+                veredito = chance > 55 ? "<b>Veredito:</b> Excelente valor (Edge positivo). O perfil de pressão inicial suporta a linha de 2 ou mais cantos." : "<b>Veredito:</b> Risco alto para 2 cantos nos primeiros 10 minutos. O histórico não garante volume suficiente.";
+            } else {
+                veredito = chance > 35 ? "<b>Veredito:</b> Oportunidade de Odd alta (Tiro longo). Altamente especulativo, indicado apenas para jogos de extrema pressão." : "<b>Veredito:</b> Inviável estatisticamente. Chance muito baixa para 3+ escanteios neste início.";
+            }
+
             let resBox = document.getElementById(`res-${docId}`);
             resBox.setAttribute('data-chance', chance.toFixed(1));
             resBox.setAttribute('data-odd', oddJusta.toFixed(2));
@@ -319,9 +323,10 @@
             resBox.setAttribute('data-linha', `Mais de ${linhaSel}`);
 
             resBox.innerHTML = `
-                <b>Chance:</b> <span style="color:var(--primary);">${chance.toFixed(1)}%</span> | 
-                <b>Odd Sugerida:</b> <span style="color:var(--warning);">@${oddJusta.toFixed(2)}</span><br>
-                <b>Análise:</b> Volume esperado para ${mercadoSel} na linha de ${linhaSel} com base na pressão inicial e histórico da liga.
+                <b>Probabilidade:</b> <span style="color:var(--primary);">${chance.toFixed(1)}%</span> | 
+                <b>Odd Justa:</b> <span style="color:var(--warning);">@${oddJusta.toFixed(2)}</span><br>
+                <b>Contexto do Jogo:</b> ${analiseBase}<br>
+                ${veredito}
             `;
         };
 
