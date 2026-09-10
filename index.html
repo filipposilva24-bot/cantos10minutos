@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Escanteios 0-10 Min</title>
+    <title>Radar Escanteios 0-10 Min Pro</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -50,10 +50,14 @@
         .radar-prob { color: var(--warning); font-weight: bold; }
         .btn-radar { background-color: var(--border); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
 
-        /* Formulário Manual */
+        /* Formulários */
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b949e; }
-        .form-group input { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px solid var(--border); color: #fff; border-radius: 4px; }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px solid var(--border); color: #fff; border-radius: 4px; 
+        }
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs .form-group { flex: 1; }
 
         button { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-add { background-color: var(--border); color: #fff; margin-top: 5px; }
@@ -63,7 +67,7 @@
         .ticket-container { display: none; border-left: 4px solid var(--highlight); }
         .ticket-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .ticket-list { list-style: none; margin-bottom: 15px; font-size: 0.9rem; }
-        .ticket-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+        .ticket-list li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
         .ticket-list li button { width: auto; padding: 2px 8px; background: var(--danger); color: white; font-size: 0.7rem; }
 
         /* Bets List */
@@ -77,7 +81,7 @@
         .bet-finances { font-size: 0.9rem; color: #fff; text-align: right; }
 
         .leg-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
-        .leg-info { font-size: 0.9rem; }
+        .leg-info { font-size: 0.85rem; }
         .leg-actions button { width: auto; padding: 4px 8px; font-size: 0.8rem; margin-left: 5px; }
         .btn-g { background-color: var(--primary); color: white; }
         .btn-r { background-color: var(--danger); color: white; }
@@ -90,8 +94,8 @@
 <body>
 
     <header>
-        <h1>🎯 Escanteios 0-10 Min</h1>
-        <p style="font-size: 0.8rem; color: #8b949e;">Powered by Python Scraper & Firebase</p>
+        <h1>🎯 Escanteios 0-10 Min Pro</h1>
+        <p style="font-size: 0.8rem; color: #8b949e;">Gestão Avançada por Submercados</p>
     </header>
 
     <div class="dashboard">
@@ -111,23 +115,46 @@
 
     <!-- RADAR DO DIA -->
     <div class="section-container" style="border-left: 4px solid var(--warning);">
-        <h3 class="section-title">📡 Radar de Oportunidades do Dia</h3>
+        <h3 class="section-title">📡 Radar de Oportunidades</h3>
         <div id="radar-list">
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Aguardando o robô analisar os jogos...</p>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Carregando jogos do dia...</p>
         </div>
     </div>
 
     <!-- ADICIONAR MANUALMENTE -->
     <div class="section-container">
-        <h3 class="section-title" style="color: #fff;">+ Entrada Manual</h3>
+        <h3 class="section-title" style="color: #fff;">+ Nova Entrada</h3>
         <div class="form-group">
             <label>Jogo (Ex: Real Madrid x City)</label>
             <input type="text" id="match-name" placeholder="Nome dos times">
         </div>
-        <div class="form-group">
-            <label>Odd do Jogo</label>
-            <input type="number" id="match-odd" step="0.01" placeholder="1.50">
+        
+        <div class="row-inputs">
+            <div class="form-group">
+                <label>Mercado</label>
+                <select id="match-market">
+                    <option value="Total (>0-10)">Total (Combinado)</option>
+                    <option value="Casa (>0-10)">Time da Casa (Home)</option>
+                    <option value="Visitante (>0-10)">Visitante (Away)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Linha</label>
+                <select id="match-line">
+                    <option value="Mais de 0.5">Mais de 0.5</option>
+                    <option value="Mais de 1.5">Mais de 1.5</option>
+                    <option value="Mais de 2.5">Mais de 2.5</option>
+                </select>
+            </div>
         </div>
+
+        <div class="row-inputs">
+            <div class="form-group">
+                <label>Odd</label>
+                <input type="number" id="match-odd" step="0.01" placeholder="1.50">
+            </div>
+        </div>
+        
         <button class="btn-add" onclick="window.addToTicket()">Adicionar ao Bilhete</button>
     </div>
 
@@ -152,7 +179,7 @@
         <div id="bet-list"></div>
     </div>
 
-    <!-- Módulo Firebase e Lógica Principal -->
+    <!-- SCRIPT FIREBASE E LÓGICA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
@@ -178,54 +205,52 @@
         let currentTicket = [];
         let allBets = [];
 
-        // ==========================================
-        // 1. OUVIR O RADAR DO PYTHON
-        // ==========================================
+        // OUVIR RADAR
         const qRadar = query(radarCol, orderBy("probabilidade", "desc"));
         onSnapshot(qRadar, (snapshot) => {
             const list = document.getElementById('radar-list');
             list.innerHTML = '';
             
             if (snapshot.empty) {
-                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhum jogo quente encontrado hoje.</p>';
+                list.innerHTML = '<p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Nenhum jogo no radar hoje.</p>';
                 return;
             }
 
             snapshot.forEach(doc => {
                 let jogo = doc.data();
-                // Verifica se a odd existe, senao poe 1.50 padrao
-                let oddExibida = jogo.odd ? parseFloat(jogo.odd).toFixed(2) : "1.50"; 
+                let oddPadrao = "1.55";
                 
                 list.innerHTML += `
                     <div class="radar-card">
                         <div class="radar-info">
                             <h4>${jogo.match} 🕒 ${jogo.horario || '--:--'}</h4>
-                            <p>Chance: <span class="radar-prob">${jogo.probabilidade}%</span> | Odd Est.: @${oddExibida}</p>
+                            <p>Chance: <span class="radar-prob">${jogo.probabilidade}%</span> | Est.: Total >0.5 (@${oddPadrao})</p>
                         </div>
-                        <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', ${oddExibida})">+ Bilhete</button>
+                        <button class="btn-radar" onclick="window.addFromRadar('${jogo.match}', '${oddPadrao}')">+ Bilhete</button>
                     </div>
                 `;
             });
         });
 
-        // ==========================================
-        // LÓGICA DO BILHETE (FRONTEND)
-        // ==========================================
         window.addToTicket = function() {
             const name = document.getElementById('match-name').value;
+            const market = document.getElementById('match-market').value;
+            const line = document.getElementById('match-line').value;
             const odd = parseFloat(document.getElementById('match-odd').value);
-            if (!name || isNaN(odd)) return alert("Preencha o jogo e a odd!");
-            addLeg(name, odd);
+
+            if (!name || isNaN(odd)) return alert("Preencha o nome do jogo e a odd!");
+            
+            addLeg(name, market, line, odd);
             document.getElementById('match-name').value = '';
             document.getElementById('match-odd').value = '';
         };
 
-        window.addFromRadar = function(name, odd) {
-            addLeg(name, odd);
+        window.addFromRadar = function(name, oddStr) {
+            addLeg(name, "Total (>0-10)", "Mais de 0.5", parseFloat(oddStr));
         };
 
-        function addLeg(name, odd) {
-            currentTicket.push({ name, odd, status: 'pending' });
+        function addLeg(name, market, line, odd) {
+            currentTicket.push({ name, market, line, odd, status: 'pending' });
             renderTicket();
         }
 
@@ -250,15 +275,12 @@
             let totalOdd = 1;
             currentTicket.forEach((leg, index) => {
                 totalOdd *= leg.odd;
-                list.innerHTML += `<li><span>${leg.name} (@${leg.odd.toFixed(2)})</span> <button onclick="window.removeLeg(${index})">X</button></li>`;
+                list.innerHTML += `<li><span><b>${leg.name}</b><br><span style="color:var(--highlight);">${leg.market} - ${leg.line} (@${leg.odd.toFixed(2)})</span></span> <button onclick="window.removeLeg(${index})">X</button></li>`;
             });
 
             oddLabel.innerText = totalOdd.toFixed(2);
         }
 
-        // ==========================================
-        // SALVAR APOSTA (FIREBASE)
-        // ==========================================
         window.confirmBet = async function() {
             const stake = parseFloat(document.getElementById('ticket-stake').value);
             if (isNaN(stake) || stake <= 0) return alert("Insira um valor válido de aposta.");
@@ -281,9 +303,6 @@
             }
         };
 
-        // ==========================================
-        // LER APOSTAS EM TEMPO REAL
-        // ==========================================
         const qBets = query(betsCol, orderBy("createdAt", "desc"));
         onSnapshot(qBets, (snapshot) => {
             allBets = [];
@@ -292,9 +311,6 @@
             updateDashboard();
         });
 
-        // ==========================================
-        // ATUALIZAR STATUS
-        // ==========================================
         window.updateLegStatus = async function(betId, legIndex, newStatus) {
             const bet = allBets.find(b => b.id === betId);
             if (!bet) return;
@@ -309,12 +325,10 @@
             } catch(e) { console.error("Erro:", e); }
         };
 
-        // ==========================================
-        // RENDERIZAR INTERFACE
-        // ==========================================
         function renderHistory() {
             const list = document.getElementById('bet-list');
             list.innerHTML = '';
+            allBets.spec = true;
             allBets.forEach(bet => {
                 let cardClass = bet.status === 'green' ? 'status-green' : (bet.status === 'red' ? 'status-red' : 'status-pending');
                 let returnPot = (bet.stake * bet.totalOdd).toFixed(2);
@@ -331,9 +345,11 @@
                         ? `<button class="btn-g" onclick="window.updateLegStatus('${bet.id}', ${index}, 'green')">G</button> <button class="btn-r" onclick="window.updateLegStatus('${bet.id}', ${index}, 'red')">R</button>`
                         : (leg.status === 'green' ? `<span class="badge badge-green">GREEN</span>` : `<span class="badge badge-red">RED</span>`);
                     
+                    let marketLabel = leg.market ? `${leg.market} - ${leg.line}` : "Total (>0-10)";
+
                     html += `
                         <div class="leg-item">
-                            <div class="leg-info"><b>${leg.name}</b> (@${leg.odd.toFixed(2)})</div>
+                            <div class="leg-info"><b>${leg.name}</b><br><span style="color:#8b949e; font-size:0.75rem;">${marketLabel} (@${leg.odd.toFixed(2)})</span></div>
                             <div class="leg-actions">${legActions}</div>
                         </div>`;
                 });
